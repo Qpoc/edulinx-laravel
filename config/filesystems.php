@@ -56,6 +56,14 @@ return [
             'throw' => false,
         ],
 
+        'team_cover' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/teams/cover-photo'),
+            'url' => env('APP_URL').'/storage/teams/cover-photo',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
     ],
 
     /*

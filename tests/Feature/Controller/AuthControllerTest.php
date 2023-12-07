@@ -15,7 +15,7 @@ class AuthControllerTest  extends TestCase
     {
         $requestData = [
             'email' => 'cypatungan@gmail.com',
-            'password' => 'user'
+            'password' => '12345678'
         ];
 
         $controller = new AuthController();

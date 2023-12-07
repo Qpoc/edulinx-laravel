@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Mpociot\Teamwork\Facades\Teamwork;
+use Illuminate\Support\Facades\Storage;
 use Mpociot\Teamwork\Exceptions\UserNotInTeamException;
 
 class TeamController extends Controller
@@ -22,8 +23,14 @@ class TeamController extends Controller
         $this->middleware('auth');
     }
 
-    public function paginate(){
-        return config('teamwork.team_model')::where('owner_id', Auth::id())->paginate(config('pagination.per_page'));
+    public function paginate()
+    {
+        return config('teamwork.team_model')::where('owner_id', Auth::id())->with(['users'])->paginate(config('pagination.per_page'));
+    }
+
+    public function show($id)
+    {
+        return config('teamwork.team_model')::with(['owner'])->findOrFail($id);
     }
 
     /**
@@ -34,13 +41,15 @@ class TeamController extends Controller
      */
     public function store(StoreRequest $request)
     {
-
         DB::beginTransaction();
         try {
             $teamModel = config('teamwork.team_model');
 
             $team = $teamModel::create([
                 'name' => $request->name,
+                'description' => $request->description,
+                'about' => $request->about,
+                'cover_photo' => null,
                 'owner_id' => $request->user()->getKey(),
             ]);
             $request->user()->attachTeam($team);
@@ -54,6 +63,13 @@ class TeamController extends Controller
                     });
                 }
             }
+
+            $path = Storage::disk('team_cover')->put($team->id, $request->cover_photo);
+
+            $team->update([
+                'cover_photo' => $path
+            ]);
+
             DB::commit();
             return $this->respondWithSuccess(ResponseContent::getResponse(
                 $team,
@@ -62,7 +78,7 @@ class TeamController extends Controller
             ));
         } catch (Exception $e) {
             DB::rollBack();
-            return ResponseContent::getServerError();
+            return ResponseContent::getServerError($e->getMessage());
         }
     }
 

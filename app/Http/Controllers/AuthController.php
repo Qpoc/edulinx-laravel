@@ -8,7 +8,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use F9Web\ApiResponseHelpers;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Request\Auth\RegisterRequest;
 use Mpociot\Teamwork\Facades\Teamwork;
@@ -53,7 +55,10 @@ class AuthController extends Controller
         try {
 
             $user = User::create($request->all());
-            $user->assignRole('User');
+            $user->assignRole(['Instructor','Student']);
+            $user->update([
+                'current_role_id' => Role::where('name', 'Student')->first()->id
+            ]);
             DB::commit();
             return $this->respondWithSuccess([
                 'data' => $user,
@@ -83,7 +88,7 @@ class AuthController extends Controller
         // $team->save();
 
 
-        return response()->json(auth('api')->user());
+        return response()->json(User::with(['currentRole'])->find(Auth::id()));
     }
 
     /**
@@ -118,7 +123,7 @@ class AuthController extends Controller
     protected function respondWithToken($token)
     {
         return response()->json([
-            'user' => auth('api')->user(),
+            'user' => User::with(['currentRole'])->find(auth('api')->user()->id),
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60 * 24 * 50,

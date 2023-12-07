@@ -24,9 +24,8 @@ class UserControllerTest extends TestCase
             "email" => Factory::create()->email(),
             "password" => "12345678",
             "password_confirmation" => "12345678",
-            "role" => [
-                'id' => 3,
-                "name" => 'User'
+            "roles" => [
+                3,
             ]
         ];
 
@@ -70,24 +69,15 @@ class UserControllerTest extends TestCase
     public function it_updates_a_user()
     {
         $requestData = [
-            "id" => 3,
+            "user" => 12,
             "first_name" => "Jelai Marie",
             "middle_name" => null,
             "last_name" => "Recierdo",
-            "email" => "jelai@gmail.com",
+            "email" => "hello@gmail.com",
             "password" => "12345678",
             "password_confirmation" => "12345678",
-            "role" => [
-                "id" => 1,
-                "name" => "Super Admin",
-                "guard_name" => "api",
-                "created_at" => "2023-11-25T05:02:44.000000Z",
-                "updated_at" => "2023-11-25T05:02:44.000000Z",
-                "pivot" => [
-                    "model_type" => "App\\Models\\User",
-                    "model_id" => 3,
-                    "role_id" => 1
-                ]
+            "roles" => [
+                1
             ]
         ];
 
@@ -104,7 +94,7 @@ class UserControllerTest extends TestCase
         $request = new ShowRequest([
             'user' => 1
         ]);
-        
+
         $controller = new UserController();
 
         $response = $controller->show($request);

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Teamwork;
 
+use App\Helper\ResponseContent;
+use F9Web\ApiResponseHelpers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Mail;
@@ -10,6 +12,18 @@ use Mpociot\Teamwork\TeamInvite;
 
 class AuthController extends Controller
 {
+
+    use ApiResponseHelpers;
+
+    public function validateToken($token){
+        $invite = Teamwork::getInviteFromAcceptToken($token);
+
+        if (!$invite) {
+            return $this->respondNotFound('Invitation not found');
+        }
+        return $this->respondWithSuccess(['message' => 'Invitation found']);
+    }
+
     /**
      * Accept the given invite.
      * @param $token
@@ -18,18 +32,20 @@ class AuthController extends Controller
     public function acceptInvite($token)
     {
         $invite = Teamwork::getInviteFromAcceptToken($token);
-        if (! $invite) {
-            abort(404);
+        if (!$invite) {
+            return $this->respondNotFound('Invitation not found');
         }
 
         if (auth()->check()) {
             Teamwork::acceptInvite($invite);
 
-            return redirect()->route('teams.index');
+            return $this->respondWithSuccess(ResponseContent::getResponse(
+                $invite,
+                'Invitation Successful',
+                'The invitation successfully'
+            ));
         } else {
-            session(['invite_token' => $token]);
-
-            return redirect()->to('login');
+            return $this->respondForbidden('You must be logged in to accept an invitation');
         }
     }
 }

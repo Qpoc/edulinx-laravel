@@ -20,6 +20,9 @@ class TeamworkSetupTables extends Migration
             $table->increments('id')->unsigned();
             $table->integer('owner_id')->unsigned()->nullable();
             $table->string('name');
+            $table->string('description')->nullable();
+            $table->text('about')->nullable();
+            $table->string('cover_photo', 500)->nullable();
             $table->timestamps();
         });
 

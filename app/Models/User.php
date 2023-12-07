@@ -44,10 +44,10 @@ class User extends Authenticatable implements JWTSubject
 
     protected $with = [
         'roles',
-        'currentRole'
     ];
 
     protected $appends = [
+        'full_name',
         'avatar'
     ];
 
@@ -97,5 +97,9 @@ class User extends Authenticatable implements JWTSubject
             md5(strtolower($this->email)),
             $this->first_name ? urlencode("https://ui-avatars.com/api/$this->first_name") : 'mp',
         ]);
+    }
+
+    public function getFullNameAttribute(){
+        return $this->first_name . ' ' . $this->last_name;
     }
 }
